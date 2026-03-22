@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏢 Sistema de Soporte y Gestión de Portales (Canal de Comunicación con Clientes)
 
-## Getting Started
+## 📋 Descripción General del Proyecto
+Esta plataforma es un canal centralizado diseñado para que los clientes de **Suttaq** reciban soporte sobre los sistemas y páginas web desarrollados por nuestra empresa. Permite unificar la comunicación de errores, monitorear el rendimiento de los portales entregados y automatizar el triaje mediante Inteligencia Artificial para dar respuesta prioritaria a fallos críticos.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🏗️ Arquitectura y Stack Tecnológico
+
+| Capa | Tecnología | Propósito |
+|---|---|---|
+
+---
+
+## 🔄 Flujo Operativo del Sistema
+
+```mermaid
+graph TD
+    A[Cliente crea Ticket] --> B{Motor de IA}
+    B -->|Análisis NLP| C[Clasificación: Prioridad/Área/Sentimiento]
+    C --> D[Asignación Automática/Manual a Dev]
+    D --> E[Desarrollador procesa Incidencia]
+    E --> F[Comunicación por Comentarios]
+    F --> G{¿Problema Resuelto?}
+    G -->|Sí| H[Cierre de Ticket & Reporte SLA]
+    G -->|No| E
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. **Ingreso**: El cliente reporta un problema indicando el portal afectado.
+2. **Procesamiento Asíncrono**: El sistema envía el texto al microservicio de IA.
+3. **Triaje Automatizado**: Se actualizan los metadatos en la base de datos (Prioridad AI, Área AI).
+4. **Gestión**: El personal técnico recibe alertas y comienza la resolución.
+5. **Cierre**: Tras la resolución, el sistema genera métricas automáticas para reportes semanales.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📂 Organización del Código
 
-## Learn More
+* `/app`: Rutas y lógica de páginas de Next.js.
+* `/components`: Componentes de UI modulares (Dashboard, UI Elements).
+* `/lib`: Utilidades, tipos de datos y cliente de Prisma.
+* `/prisma`: Esquema de la base de datos y migraciones.
+* `/hook`: Hooks personalizados para estado y notificaciones.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚀 Instalación y Configuración
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Clonar el repositorio:**
 
-## Deploy on Vercel
+    ```bash
+    git clone [url-del-repo]
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. **Instalar dependencias:**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+    ```bash
+    npm install
+    ```
+
+3. **Configurar variables de entorno:**
+    Crea un archivo `.env` basado en `.env.example` con tus credenciales de Supabase y Database URL.
+4. **Sincronizar base de datos:**
+
+    ```bash
+    npx prisma generate
+    npx prisma db push
+    ```
+
+5. **Ejecutar en desarrollo:**
+
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 🔒 Buenas Prácticas
+
+* **Flujo Git**: Prohibido hacer push directo a `main`. Todo cambio requiere Pull Request en ramas secundarias.
+* **Entornos**: Mantenimiento estricto de entornos Local, Sandbox y Producción.
+* **Documentación de Tareas**: Cada intervención debe registrar: Proyecto, Entorno, Rama Git e IP impactada.
+
+---
+*Desarrollado para la optimización del soporte técnico B2B.*
