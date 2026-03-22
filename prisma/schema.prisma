@@ -1,0 +1,167 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma/client"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+// ================= ENUMS =================
+
+enum Role {
+  CLIENT
+  DEV
+  ADMIN
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum PriorityAI {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AreaAI {
+  FRONTEND
+  BACKEND
+  DATABASE
+  INFRA
+}
+
+enum SentimentAI {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+// ================= MODELOS =================
+
+model User {
+  id            String    @id @db.Uuid
+  name          String    @db.VarChar(100)
+  email         String    @unique @db.VarChar(150)
+  role          Role
+  portal_id     String?   @db.Uuid // Un usuario puede pertenecer a un portal
+  created_at    DateTime  @default(now())
+
+  // Relaciones
+  portal           Portal?   @relation(fields: [portal_id], references: [id])
+  created_tickets  Ticket[]  @relation("ClientTickets")
+  assigned_tickets Ticket[]  @relation("DevTickets")
+  comments         Comment[]
+
+  @@map("users")
+}
+
+model Portal {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String   @db.VarChar(100)
+  url        String?  @db.VarChar(200)
+  ip_address String?  @db.VarChar(45)
+  created_at DateTime @default(now())
+
+  // Relaciones
+  tickets     Ticket[]
+  users       User[]
+  deployments Deployment[]
+  error_logs  ErrorLog[]
+
+  @@map("portals")
+}
+
+model Ticket {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title           String        @db.VarChar(150)
+  description     String        @db.Text
+  status          TicketStatus  @default(OPEN)
+  
+  // Metadatos de la IA
+  priority_ai     PriorityAI?
+  area_ai         AreaAI?
+  sentiment_ai    SentimentAI?
+  
+  // Llaves Foráneas
+  portal_id       String        @db.Uuid
+  client_id       String        @db.Uuid
+  assigned_dev_id String?       @db.Uuid
+
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+
+  // Relaciones
+  portal          Portal        @relation(fields: [portal_id], references: [id], onDelete: Cascade)
+  client          User          @relation("ClientTickets", fields: [client_id], references: [id])
+  developer       User?         @relation("DevTickets", fields: [assigned_dev_id], references: [id])
+  comments        Comment[]
+  attachments     Attachment[]
+
+  @@map("tickets")
+}
+
+model Comment {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  content    String   @db.Text
+  ticket_id  String   @db.Uuid
+  user_id    String   @db.Uuid
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relaciones
+  ticket     Ticket   @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+  author     User     @relation(fields: [user_id], references: [id])
+
+  @@map("comments")
+}
+
+model Attachment {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  file_url    String   @db.VarChar(255)
+  file_type   String   @db.VarChar(50)
+  ticket_id   String   @db.Uuid
+  uploaded_at DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  // Relaciones
+  ticket      Ticket   @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
+}
+
+model Deployment {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  version    String   @db.VarChar(50)
+  status     String   @db.VarChar(50) @default("SUCCESS")
+  portal_id  String   @db.Uuid
+  created_at DateTime @default(now())
+
+  // Relaciones
+  portal     Portal   @relation(fields: [portal_id], references: [id], onDelete: Cascade)
+
+  @@map("deployments")
+}
+
+model ErrorLog {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  message     String   @db.Text
+  stack_trace String?  @db.Text
+  portal_id   String   @db.Uuid
+  created_at  DateTime @default(now())
+
+  // Relaciones
+  portal      Portal   @relation(fields: [portal_id], references: [id], onDelete: Cascade)
+
+  @@map("error_logs")
+}
